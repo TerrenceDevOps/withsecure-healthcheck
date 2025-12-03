@@ -32,6 +32,45 @@ Perfect for development and testing
 No cloud infrastructure required
 
 # Deployment Instructions ⚡
+### 🐳 Docker Build & Run  Instructions
+
+This project includes a fully containerized FastAPI application.
+Below are the complete Docker commands used to build, run.
+
+### Build the Docker Image
+
+Make sure you are in the project root where the Dockerfile is located:
+```
+docker build -t health-check-service:latest .
+```
+```
+If you want to tag it for Docker Hub:
+```
+docker tag health-check-service:latest terrence045/withsecure-healthcheck:latest
+```
+### Run the Docker Container
+```
+Run the application on port 8080 and set the required environment variable:
+```
+docker run -p 8080:8080 -e APP_ENV=local health-check-service:latest
+
+
+Or run it in the background:
+
+docker run -d -p 8080:8080 --name health-check terrence045/withsecure-healthcheck:latest
+```
+### Test the Endpoints Locally
+curl http://127.0.0.1:8080/health
+curl http://127.0.0.1:8080/info
+```
+
+Expected:
+```
+{"status":"healthy"}
+{"service":"hello-service","environment":"local"}
+```
+Now Deploying to K8s
+
 Step 1 — Start Minikube
 ```
 minikube start
@@ -78,10 +117,11 @@ curl.exe http://127.0.0.1:61340/info
 ```
 
 If using port-forwarding (access in browser or curl):
-```
+
 curl http://localhost:8080/health
 curl http://localhost:8080/info
 ```
+
 
 ## Expected Results
 

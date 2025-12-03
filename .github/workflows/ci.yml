@@ -7,30 +7,43 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-    
-    - name: Test Python app
-      run: |
-        python -m uvicorn app:app --host 0.0.0.0 --port 8000 &
-        sleep 10
-        curl -f http://localhost:8000/health
-        curl -f http://localhost:8000/info
-        echo "✅ Python app works!"
-    
-    - name: Build and test Docker
-      run: |
-        docker build -t fastapi-app .
-        docker run -d --name test-container -p 8001:8000 fastapi-app
-        sleep 15
-        curl -f http://localhost:8001/health || curl -f http://localhost:8001/
-        echo "✅ Docker container works!"
-        docker stop test-container
-        docker rm test-container
+      - uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Test Python application
+        run: |
+          python -m uvicorn app:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+          curl -f http://localhost:8000/health
+          curl -f http://localhost:8000/info
+          echo "✅ Python application works!"
+      
+      - name: Build Docker image
+        run: |
+          docker build -t fastapi-app .
+          echo "✅ Docker image built successfully"
+      
+      - name: Test Docker container
+        run: |
+          # Run container: host port 8081 -> container port 8080
+          docker run -d --name test-container -p 8081:8080 fastapi-app
+          sleep 15
+          
+          # Test container endpoints
+          curl -f http://localhost:8081/health
+          echo "✅ Docker /health endpoint works"
+          
+          curl -f http://localhost:8081/info
+          echo "✅ Docker /info endpoint works"
+          
+          # Cleanup
+          docker stop test-container
+          docker rm test-container
+          echo "✅ Docker container test passed!"

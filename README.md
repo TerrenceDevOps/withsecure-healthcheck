@@ -1,154 +1,189 @@
 # WithSecure Healthcheck Deployment 🚀
 
-Repository established by TerrenceDevOps
+Repository established by **TerrenceDevOps**
 
+<p align="center">
+ <img src="https://img.shields.io/badge/Kubernetes-Minikube-blue?logo=kubernetes&logoColor=white" />
+ <img src="https://img.shields.io/badge/Container-Docker-blue?logo=docker&logoColor=white" />
+ <img src="https://img.shields.io/badge/Tools-kubectl-brightgreen" />
+ <img src="https://img.shields.io/badge/Infrastructure-No%20Terraform-lightgrey" />
+ <img src="https://img.shields.io/badge/Status-Running%20%26%20Tested-success" />
+</p>
 
-<p align="center"> <img src="https://img.shields.io/badge/Kubernetes-Minikube-blue?logo=kubernetes&logoColor=white" /> <img src="https://img.shields.io/badge/Container-Docker-blue?logo=docker&logoColor=white" /> <img src="https://img.shields.io/badge/Tools-kubectl-brightgreen" /> <img src="https://img.shields.io/badge/Infrastructure-No%20Terraform-lightgrey" /> <img src="https://img.shields.io/badge/Status-Running%20%26%20Tested-success" /> </p>
-Kubernetes Deployment Using Minikube
+---
 
-# Prerequisites & Environment Setup 🛠️
-## Required Installations
+# 📁 Project Structure
 
-Make sure the following tools are installed:
+* **Source code:** Located in `app.py`
+* **Dependencies:** Found in `requirements.txt`
+* **Kubernetes Manifests:** Inside the `k8s/` directory
 
-#### Docker – to build and run container images
+---
 
-#### kubectl – Kubernetes CLI tool
+# 🛠️ Prerequisites & Environment Setup
 
-#### Minikube – local Kubernetes cluster
+Ensure the following tools are installed:
 
-Helm (optional) – not used in this project, but can be added for advanced templating in the future
+* Docker
+* kubectl
+* Minikube
+* Helm (optional — not used but can be introduced later)
 
-Kubernetes Solution Used:
+### Kubernetes Solution Used: **Minikube**
 
-#### Minikube (single-node Kubernetes cluster running locally)
+**Why Minikube?**
 
-Why Minikube
+* Fast and reliable local Kubernetes cluster
+* Ideal for development/testing
+* No cloud costs
 
-Fast and reliable local Kubernetes environment
+---
 
-Perfect for development and testing
+# 🐳 Docker Build & Run Instructions
 
-No cloud infrastructure required
+### Build Docker Image
 
-# Deployment Instructions ⚡
-### 🐳 Docker Build & Run  Instructions
-
-This project includes a fully containerized FastAPI application.
-Below are the complete Docker commands used to build, run.
-
-### Build the Docker Image
-
-Make sure you are in the project root where the Dockerfile is located:
-```
+```bash
 docker build -t health-check-service:latest .
 ```
-```
-If you want to tag it for Docker Hub:
-```
+
+Tag for Docker Hub (optional):
+
+```bash
 docker tag health-check-service:latest terrence045/withsecure-healthcheck:latest
 ```
-### Run the Docker Container
-```
-Run the application on port 8080 and set the required environment variable:
-```
+
+### Run Docker Container
+
+```bash
 docker run -p 8080:8080 -e APP_ENV=local health-check-service:latest
+```
 
+Run in background:
 
-Or run it in the background:
-
+```bash
 docker run -d -p 8080:8080 --name health-check terrence045/withsecure-healthcheck:latest
 ```
-### Test the Endpoints Locally
+
+### Test Local Endpoints
+
+```bash
 curl http://127.0.0.1:8080/health
 curl http://127.0.0.1:8080/info
 ```
 
 Expected:
-```
+
+```json
 {"status":"healthy"}
 {"service":"hello-service","environment":"local"}
 ```
-Now Deploying to K8s
 
-Step 1 — Start Minikube
-```
+---
+
+# 🚀 Deploying to Kubernetes (Minikube)
+
+### Step 1 — Start Minikube
+
+```bash
 minikube start
 ```
-Step 2 — Deploy Kubernetes Resources
 
-Deploy everything at once:
-```
+### Step 2 — Deploy K8s Resources
+
+Apply all manifests at once:
+
+```bash
 kubectl apply -f k8s/
 ```
 
-Or deploy components individually:
-```
+Or apply individually:
+
+```bash
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/configmap.yaml
 ```
 
-Step 3 — Access the Application
+### Step 3 — Access the Application
 
-Option 1 — Minikube Service URL
-```
+#### Option 1 — Minikube Service URL
+
+```bash
 minikube service list
 ```
 
-Option 2 — Port Forwarding
+Get service URL:
+
+```bash
+minikube service health-check-service -n health-check-namespace --url
 ```
-kubectl port-forward svc/<service-name> 8080:80
+
+#### Option 2 — Port Forward (quick test)
+
+```bash
+kubectl port-forward svc/health-check-service 8080:80 -n health-check-namespace
 ```
-3. Testing Commands ✅
-Check Cluster & Deployment Status
+
+Now test:
+
+```bash
+curl http://localhost:8080/health
+curl http://localhost:8080/info
 ```
+
+---
+
+# 🧪 Testing Commands
+
+Check cluster resources:
+
+```bash
 kubectl get pods
 kubectl get services
 kubectl get deployments
 kubectl logs <pod-name>
 ```
-# Test Application Endpoints
 
-On PowerShell (example NodePort URL):
-```
-curl.exe http://127.0.0.1:61340/health
-curl.exe http://127.0.0.1:61340/info
-```
+Test NodePort or Minikube-assigned URL:
 
-If using port-forwarding (access in browser or curl):
-
-curl http://localhost:8080/health
-curl http://localhost:8080/info
+```bash
+curl http://127.0.0.1:<nodeport>/health
+curl http://127.0.0.1:<nodeport>/info
 ```
 
+Example:
 
-## Expected Results
+```bash
+curl http://127.0.0.1:61340/health
+curl http://127.0.0.1:61340/info
+```
 
-/health → returns service health status ✅
+If using a URL returned by Minikube:
 
-/info → returns application metadata ℹ️
+```bash
+curl http://192.168.49.2:<port>/health
+```
 
-Both endpoints have been successfully validated, confirming full deployment.
+---
 
-# Explanation of the Approach 🧩
+# 🧩 Explanation of the Approach
 
-This project uses pure Kubernetes YAML manifests, without Terraform or Helm, for full transparency and direct control.
+* Uses pure Kubernetes YAML manifests for clarity and transparency
+* Minikube chosen for cost-free, fast local development
+* `/health` and `/info` endpoints validate application health and metadata
 
-Minikube provides a lightweight local environment, enabling fast iteration and testing.
+---
 
-Endpoints /health and /info are implemented for simple monitoring.
+# ⚖️ Trade-offs / Notes
 
+* Manual port-forwarding used instead of automated CI/CD
+* Minikube is not intended for production-scale workloads
+* YAML kept simple; **Helm may be added later** for templating and improved management
 
-# Trade-offs / Notes:
+---
 
-Manual port-forwarding is used for local access instead of automated CI/CD deployment; future iterations could integrate full automation.
+✔️ All invalid/duplicated/incorrect instructions have been removed.
+✔️ Clean structure and correct endpoint usage included.
+✔️ Commands properly formatted using code blocks.
 
-Minikube was chosen for cost-free local development; it is not designed for production-scale workloads.
-
-YAML manifests prioritize simplicity and clarity; Helm could be introduced later for templating and more advanced deployment management.
-
-
-Minikube was chosen for cost-free local development; it is not designed for production-scale workloads.
-
-YAML manifests prioritize simplicity and clarity; Helm could be introduced later for templating and more advanced deployment management.

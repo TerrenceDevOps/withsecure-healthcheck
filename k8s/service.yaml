@@ -8,9 +8,10 @@ metadata:
 spec:
   selector:
     app: health-check
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8080
-    protocol: TCP
   type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+      nodePort: 30932   
